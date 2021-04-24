@@ -25,7 +25,11 @@ refs.container.addEventListener("click", onLinkClick);
 function onInput(event) {
     resetContainer()
     const query = event.target.value;
-    doSearch(query)
+    try {
+        doSearch(query)
+    } catch (error) {
+        console.warn("Произошла ошибка: "+error.message)
+    }
 }
 
 function onLinkClick(event) {
@@ -33,24 +37,27 @@ function onLinkClick(event) {
     const countryName = event.target.textContent;
 
     refs.inputBox.value = countryName;
-    doSearch(countryName);
+    try {
+        doSearch(countryName)
+    } catch (error) {
+        console.warn("Произошла ошибка: "+error.message)
+    }
 }
 
-function doSearch(name) {
-    makeRequest(name)
-        .then(data => {
-            const dataLength = data.length;
-            
-            if (dataLength === 1) {
-                makeOneCountrymarkup(data);
-            } else if (dataLength < 11) {
-                makeFewCountriesmarkup(data);
-            } else if ((dataLength > 10)) {
-                sendErrorMessage("There's too many results.", 'Please, do more specific search.');
-            } else {
-                sendErrorMessage("I didn't find anything.", 'Check if the name is written correctly.');
-            }  
-        }).catch(console.warn);
+async function doSearch(name) {
+    const countryList = await makeRequest(name);
+    const dataLength = countryList.length;
+
+    if (dataLength === 1) {
+        makeOneCountrymarkup(countryList);
+    } else if (dataLength < 11) {
+        makeFewCountriesmarkup(countryList);
+    } else if ((dataLength > 10)) {
+        sendErrorMessage("There's too many results.", 'Please, do more specific search.');
+    } else {
+        sendErrorMessage("I didn't find anything.", 'Check if the name is written correctly.');
+    }
+    
 }
 
 function makeFewCountriesmarkup(data) {
